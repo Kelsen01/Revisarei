@@ -1,0 +1,256 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Revisarei{% endblock  %}
+
+{% block content %}
+
+<!--
+<h1 style="margin-bottom: 20px;">Cálculo de Preço</h1>
+-->
+<form method="POST" action="{% url 'index' %}">
+    {% csrf_token %}
+
+    <!-- Campo oculto para o ID do usuário -->
+
+    <input type="hidden" name="usuario" class="form-group" value="{{ user_id|default:'' }}">
+
+    <div class="container mt-5">
+        <div class="row align-items-start">
+            <!-- Primeira Coluna: Campos do Formulário -->
+            <div class="col-md-6">
+                <div class="input-group mb-3">
+                    <label class="input-group-text" for="nome">Nome</label>
+                    <input 
+                        type="text" 
+                        name="name" 
+                        id="nome" 
+                        class="form-control" 
+                        value="{% if user.is_authenticated %}{{ user_name }}{% else %}{{ form.name.value|default:'' }}{% endif %}"
+                        {% if user.is_authenticated %}readonly{% endif %}>
+                </div>
+                <div class="input-group mb-3">
+                    <label class="input-group-text" for="quantidadedepaginas">Quantidade de Páginas</label>
+                    {{ form.quant_pag }}
+                </div>
+                <div class="input-group mb-3">
+                    <label class="input-group-text">Selecione o Tipo</label>
+                    {{ form.tipo }}
+                </div>
+                <div class="input-group mb-3">
+                    <label class="input-group-text">Preço/Página</label>
+                    {{ form.custo_pag }}
+                </div>
+                <div class="d-flex justify-content-center mb-3">
+                    <label for="diagrama" class="form-group" style="color: white">Diagramação:</label>
+                    {{ form.diagramacao }}
+                </div>                  
+                <div id="diagramacaoForm" class="input-group mb-3 hidden">
+                    <label for="custoDiagramacao" class="input-group-text">Preco/Diagramação:</label>
+                    
+                    {{ form.custo_diagramacao }}
+                </div>
+            </div>
+
+            <!-- Segunda Coluna: Preço Total -->
+            <div class="container mt-4 col-md-6">
+                <div class="alert alert-success text-center" role="alert" style="background-color: transparent; border: none; box-shadow: none; justify-content: center; align-items: center;">
+                    <h4 class="alert-heading" style="color: white">Preço Total:</h4>
+                    <p style="font-weight: 700;font-size: 70px; color: white" id="preco" class="display-4">R$ 0.00</p>
+                </div>
+            </div>            
+        </div>
+    
+        <!-- Botão de Envio -->
+        <div style="text-align: center;">
+            <input style="background-color: white; color: black; border: none;" type="submit" class="btn btn-success mt-4" value="Enviar">
+        </div>
+    </div>
+
+<h1 class="display-1 fs-1" style="margin: 20px 0;">Veja a Média dos Preços</h1>
+<div class="container">
+    <div class="mb-3">
+        <select id="tipo" class="form-select">
+            <option value="">Selecione um tipo</option>
+            {% for tipo in tipos %}
+                <option value="{{ tipo }}">{{ tipo }}</option>
+            {% endfor %}
+        </select>
+    </div>
+    <table class="table" id="resultadoTabela" style="display: none; text-align: center;">
+        <thead>
+            <tr>
+                <th scope="col">Páginas</th>
+                <th scope="col">Custo/Página</th>
+            </tr>
+        </thead>
+        <tbody class="table-group">
+            <tr>
+                <td id="mediaPaginas"></td>
+                <td id="mediaCustoPagina"></td>
+            </tr>
+        </tbody>
+        <thead>
+            <tr>
+                <th scope="col">Diagramação</th>
+                <th scope="col">Total</th>
+            </tr>
+        </thead>
+        <tbody class="table-group">
+            <tr>
+                <td id="mediaDiagramacao"></td>
+                <td id="mediaTotal"></td>
+            </tr>
+        </tbody>
+        <thead>
+            <tr>
+                <th colspan="2" scope="col">Resultados</th>
+            </tr>
+        </thead>
+        <tbody class="table-group">
+            <tr>
+                <td colspan="2" id="quantidade"></td>
+            </tr>
+        </tbody>
+    </table>
+</div>
+
+<script>
+    document.getElementById('tipo').addEventListener('change', function () {
+        const tipo = this.value;
+
+        if (!tipo) {
+            document.getElementById('resultadoTabela').style.display = 'none';
+            return;
+        }
+
+        fetch(`/calcular-medias?tipo=${tipo}`)
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error("Nenhum dado encontrado para o tipo selecionado.");
+                }
+                return response.json();
+            })
+            .then(data => {
+                document.getElementById('mediaPaginas').textContent = data.media_paginas;
+                document.getElementById('mediaCustoPagina').textContent = data.media_custo_pagina;
+                document.getElementById('mediaDiagramacao').textContent = data.media_diagramacao;
+                document.getElementById('mediaTotal').textContent = data.media_total;
+                document.getElementById('quantidade').textContent = data.quantidade;
+
+                document.getElementById('resultadoTabela').style.display = 'table';
+            })
+            .catch(error => {
+                alert(error.message);
+                document.getElementById('resultadoTabela').style.display = 'none';
+            });
+    });
+</script>    
+</div>
+
+<h1 class="display-1 fs-1" style="margin: 20px 0;">Resultados</h1>
+<div class="container">
+    <div class="row">
+        {% for calculo in page_obj %}
+            <div class="col-md-4 d-flex justify-content-center">
+                <div class="card" style="width: 20rem; margin: 10px;">
+                    <div class="card-body">
+                        <h5 class="card-title text-center">{{ calculo.name }}</h5>
+                        <div class="container">
+                            <!--                            
+                            <div class="row">
+                                <div class="col-6 text-end">
+                                    <strong>Nome:</strong>
+                                </div>
+                                <div class="col-6 text-start">
+                                    <span>{{ calculo.name }}</span>
+                                </div>
+                            </div>
+                            -->
+                            <div class="row">
+                                <div class="col-6 text-end">
+                                    <strong>Tipo:</strong>
+                                </div>
+                                <div class="col-6 text-start">
+                                    <span>{{ calculo.tipo }}</span>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-6 text-end">
+                                    <strong>Páginas:</strong>
+                                </div>
+                                <div class="col-6 text-start">
+                                    <span>{{ calculo.quant_pag }}</span>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-6 text-end">
+                                    <strong>Custo/Página:</strong>
+                                </div>
+                                <div class="col-6 text-start">
+                                    <span>R$ {{ calculo.custo_pag }}</span>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-6 text-end">
+                                    <strong>Diagramação:</strong>
+                                </div>
+                                <div class="col-6 text-start">
+                                    <span>R$ {{ calculo.custo_diagramacao }}</span>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-6 text-end">
+                                    <strong>Total:</strong>
+                                </div>
+                                <div class="col-6 text-start">
+                                    <span>R$ {{ calculo.custo }}</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        {% endfor %}
+    </div>
+    
+    <!-- Navegação de Paginação -->
+    <nav aria-label="Paginação">
+        <ul class="pagination justify-content-center">
+            {% if page_obj.has_previous %}
+                <li class="page-item">
+                    <a class="page-link" href="?page={{ page_obj.previous_page_number }}" aria-label="Anterior">
+                        <span aria-hidden="true">&laquo;</span>
+                    </a>
+                </li>
+            {% else %}
+                <li class="page-item disabled">
+                    <span class="page-link">&laquo;</span>
+                </li>
+            {% endif %}
+            
+            {% for page_num in page_obj.paginator.page_range %}
+                {% if page_num == page_obj.number %}
+                    <li class="page-item active"><span class="page-link">{{ page_num }}</span></li>
+                {% else %}
+                    <li class="page-item"><a class="page-link" href="?page={{ page_num }}">{{ page_num }}</a></li>
+                {% endif %}
+            {% endfor %}
+            
+            {% if page_obj.has_next %}
+                <li class="page-item">
+                    <a class="page-link" href="?page={{ page_obj.next_page_number }}" aria-label="Próximo">
+                        <span aria-hidden="true">&raquo;</span>
+                    </a>
+                </li>
+            {% else %}
+                <li class="page-item disabled">
+                    <span class="page-link">&raquo;</span>
+                </li>
+            {% endif %}
+        </ul>
+    </nav>
+</div>
+
+    
+{% endblock  %}

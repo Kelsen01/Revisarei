@@ -1,0 +1,36 @@
+h1 {
+    background-color: #cc5456; /* Cor de fundo */
+    color: white;
+    padding: 10px;              /* Adiciona espaço interno */
+    position: relative;         /* Define a posição relativa */
+    line-height: 2; /* Aumenta a altura da linha */
+    font-weight: 300;
+}    
+* {
+    font-family: 'Open Sans', sans-serif;
+    font-weight: 300;
+}
+.input-group {
+    display: flex; /* Garante que os elementos fiquem lado a lado */
+    align-items: center; /* Alinha os itens verticalmente ao centro */
+}
+.input-group .input-group-text {
+    flex: 0 0 35%; /* Ajusta a largura do label */
+    height: 40px; /* Define a altura do label */
+    display: flex;
+    align-items: center; /* Centraliza o texto do label verticalmente */
+    justify-content: center; /* Centraliza o texto do label horizontalmente */
+    text-align: right; /* Alinha o texto do label à direita */
+}
+.input-group .form-control {
+    flex: 1; /* Faz o input ocupar o restante do espaço */
+    height: 40px; /* Ajusta a altura do campo de input */
+    line-height: 40px; /* Garante que o texto dentro do input seja centralizado verticalmente */
+}
+.hidden {
+    display: none;
+}
+input[type="submit"]:focus {
+    outline: none; /* Remove o contorno */
+    box-shadow: none; /* Remove a sombra de foco */
+}    

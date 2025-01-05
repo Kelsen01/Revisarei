@@ -1,0 +1,53 @@
+{% extends "base.html" %}
+{% load crispy_forms_tags %}
+
+{% block title %}Login{% endblock  %}
+
+{% block content %}
+<div class='row'>
+    <div class='col-md-4 offset-md-4'>
+        <div class='card auth-card'>
+            <div class='card-body'>
+                <h4 class='card-title text-center'>Login</h4>
+
+                <form method='POST'>
+                    {% csrf_token %}
+                    <input type='hidden' name='next' value='{{ next }}'>
+
+                    {{ form|crispy }}
+                    <div class="button-container">
+                        <button class="btn">Entrar</button>
+                        <button class="btn"><a class="nav-link active" aria-current="page" href="{% url 'signUp' %}">Registrar</a></button>
+                    </div>
+                      
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .button-container {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        width: 100%; /* Ajuste conforme necessário */
+        padding: 10px; /* Espaçamento interno opcional */
+      }
+      
+    .btn {
+        padding: 10px 20px;
+        font-size: 16px;
+        color: #fff;
+        background-color: #007BFF;
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+        transition: background-color 0.3s ease;
+      }
+      
+    .btn:hover {
+        background-color: #0056b3;
+      }
+</style>
+{% endblock %}
